@@ -9,6 +9,7 @@ use sp_runtime::{
 };
 use sp_std::cell::RefCell;
 
+// use pallet_randomness_collective_flip;
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
 /// Type used for expressing timestamp.
@@ -21,14 +22,14 @@ frame_support::construct_runtime!(
         NodeBlock = Block,
         UncheckedExtrinsic = UncheckedExtrinsic,
     {
-        System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
-        DID: pallet_did,
+        System: frame_system,
+        DID: pallet_did::{Pallet, Call, Storage, Event<T>},
         Timestamp: pallet_timestamp,
     }
 );
 
 impl system::Config for Test {
-    type BaseCallFilter = ();
+    type BaseCallFilter = frame_support::traits::Everything;
     type BlockWeights = ();
     type BlockLength = ();
     type DbWeight = ();
@@ -57,7 +58,7 @@ impl frame_system::offchain::SigningTypes for Test {
     type Signature = sr25519::Signature;
 }
 
-type Extrinsic = sp_runtime::testing::TestXt<Call, ()>;
+type Extrinsic = sp_runtime::testing::TestXt<RuntimeCall, ()>;
 type AccountId = <<sp_core::sr25519::Signature as Verify>::Signer as IdentifyAccount>::AccountId;
 
 impl<LocalCall> frame_system::offchain::SendTransactionTypes<LocalCall> for Test

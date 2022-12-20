@@ -93,7 +93,7 @@ pub mod pallet {
 	use sp_std::prelude::*;
     use frame_system::ensure_signed;
     use frame_support::{
-        dispatch::DispatchResult, ensure,traits::{Time, IsType}, StorageMap,
+        dispatch::DispatchResult, ensure,traits::{Time, IsType},
         sp_runtime::traits::{Scale, IdentifyAccount, Member, Verify},
     };
     use codec::{Decode, Encode};
@@ -108,18 +108,19 @@ pub mod pallet {
 	#[pallet::without_storage_info]
 	#[pallet::generate_store(pub(super) trait Store)]
 	pub struct Pallet<T>(_);
+
     #[pallet::config]
     pub trait Config: frame_system::Config {
         type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
         type Public: IdentifyAccount<AccountId = Self::AccountId>;
-        type Signature: Verify<Signer = Self::Public> + Member + Decode + Encode;
+        type Signature: Verify<Signer = Self::Public> + Member + Decode + Encode + TypeInfo;
 		type Moment: Parameter
 		+ Default
 		+ Scale<Self::BlockNumber, Output = Self::Moment>
 		+ Copy
 		+ MaxEncodedLen
 		+ StaticTypeInfo;
-		type Time: Time<Moment=Self::Moment> ;
+		type Timestamp: Time<Moment=Self::Moment> ;
     }
 
     #[pallet::storage]
@@ -131,7 +132,7 @@ pub mod pallet {
     #[pallet::storage]
     #[pallet::getter(fn attribute_of)]
     pub type AttributeOf<T: Config> =
-    StorageMap<_, Blake2_128Concat, (T::AccountId, [u8; 32]), Attribute<T::BlockNumber, T::Moment>, OptionQuery>;
+    StorageMap<_, Blake2_128Concat, (T::AccountId,  [u8; 32]), Attribute<T::BlockNumber, T::Moment>, OptionQuery>;
     
     #[pallet::storage]
     #[pallet::getter(fn nonce_of)]
@@ -141,12 +142,12 @@ pub mod pallet {
     #[pallet::storage]
     #[pallet::getter(fn owner_of)]
     pub type OwnerOf<T: Config> =
-    StorageMap<_, Blake2_128Concat, T::AccountId, Option<T::AccountId>, OptionQuery>;
+    StorageMap<_, Blake2_128Concat, T::AccountId, T::AccountId, OptionQuery>;
     
     #[pallet::storage]
     #[pallet::getter(fn updated_by)]
     pub type UpdatedBy<T: Config> =
-    StorageMap<_, Blake2_128Concat, T::AccountId, (T::AccountId, T::BlockNumber, T::Time), OptionQuery>;
+    StorageMap<_, Blake2_128Concat, T::AccountId, (T::AccountId, T::BlockNumber, T::Moment), OptionQuery>;
 
 
 	#[pallet::event]
@@ -187,12 +188,13 @@ pub mod pallet {
                 let who = ensure_signed(origin)?;
                 Self::is_owner(&identity, &who)?;
     
-                let now_timestamp = T::Time::now();
+                let now_timestamp = T::Timestamp::now();
                 let now_block_number = <frame_system::Pallet<T>>::block_number();
     
                 if <OwnerOf<T>>::contains_key(&identity) {
                     // Update to new owner.
                     <OwnerOf<T>>::mutate(&identity, |o| *o = Some(new_owner.clone()));
+
                 } else {
                     // Add to new owner.
                     <OwnerOf<T>>::insert(&identity, &new_owner);
@@ -225,7 +227,7 @@ pub mod pallet {
     
                 Self::create_delegate( &who, &identity, &delegate, &delegate_type, valid_for)?;
     
-                let now_timestamp = T::Time::now();
+                let now_timestamp = T::Timestamp::now();
                 let now_block_number = <frame_system::Pallet<T>>::block_number();
                 <UpdatedBy<T>>::insert(&identity, (who, now_block_number, now_timestamp));
     
@@ -252,12 +254,12 @@ pub mod pallet {
                 Self::valid_listed_delegate(&identity, &delegate_type, &delegate)?;
                 ensure!(delegate_type.len() <= 64, Error::<T>::InvalidDelegate);
     
-                let now_timestamp = T::Time::now();
+                let now_timestamp = T::Timestamp::now();
                 let now_block_number = <frame_system::Pallet<T>>::block_number();
     
                 // Update only the validity period to revoke the delegate.
                 <DelegateOf<T>>::mutate(
-                    (&identity, &delegate_type, &delegate), |b| *b = Some(now_block_number),
+                    (&identity, &delegate_type, &delegate), |b| *b = Some(Some(now_block_number)),
                 );
                 <UpdatedBy<T>>::insert(&identity, (who, now_block_number, now_timestamp));
                 Self::deposit_event(Event::DelegateRevoked(identity, delegate_type, delegate));
@@ -318,7 +320,7 @@ pub mod pallet {
     
                 <UpdatedBy<T>>::insert(
                     &identity,
-                    (&who, &now_block_number, T::Time::now()),
+                    (&who, &now_block_number, T::Timestamp::now()),
                 );
     
                 Self::deposit_event(Event::AttributeDeleted(identity, name, now_block_number));
@@ -347,7 +349,7 @@ pub mod pallet {
         }
 
         impl<T: Config>
-        Did<T::AccountId, T::BlockNumber, <<T as Config>::Time as Time>::Moment, T::Signature>
+        Did<T::AccountId, T::BlockNumber, T::Moment, T::Signature>
         for Pallet<T>
     {
         /// Validates if the AccountId 'actual_owner' owns the identity.
@@ -395,7 +397,7 @@ pub mod pallet {
             );
     
             let validity = Self::delegate_of((identity, delegate_type, delegate));
-            match validity > Some(<frame_system::Pallet<T>>::block_number()) {
+            match validity > Some(Some(<frame_system::Pallet<T>>::block_number())) {
                 true => Ok(()),
                 false => Err(Error::<T>::InvalidDelegate.into()),
             }
@@ -422,7 +424,7 @@ pub mod pallet {
                 None => u32::max_value().into(),
             };
     
-            <DelegateOf<T>>::insert((&identity, delegate_type, delegate), &validity);
+            <DelegateOf<T>>::insert((&identity, delegate_type, delegate), Some(&validity));
             Ok(())
         }
     
@@ -447,7 +449,7 @@ pub mod pallet {
             signer: &T::AccountId,
         ) -> DispatchResult {
             // Owner or a delegate signer.
-            Self::valid_delegate(&identity, b"x25519VerificationKey2018", &signer)?;
+            Self::valid_delegate(&identity, b"x25519VerificationKey2021", &signer)?;
             Self::check_signature(&signature, &msg, &signer)
         }
     
@@ -464,7 +466,7 @@ pub mod pallet {
             if Self::attribute_and_id(identity, name).is_some() {
                 Err(Error::<T>::AttributeCreationFailed.into())
             } else {
-                let now_timestamp = T::Time::now();
+                let now_timestamp = T::Timestamp::now();
                 let now_block_number = <frame_system::Pallet<T>>::block_number();
                 let validity: T::BlockNumber = match valid_for {
                     Some(blocks) => now_block_number + blocks,
@@ -498,7 +500,7 @@ pub mod pallet {
             match result {
                 Some((mut attribute, id)) => {
                     attribute.validity = <frame_system::Pallet<T>>::block_number();
-                    <AttributeOf<T>>::mutate((&identity, id), |a| *a = attribute);
+                    <AttributeOf<T>>::mutate((&identity, id), |a| *a = Some(attribute));
                 }
                 None => return Err(Error::<T>::AttributeResetFailed.into()),
             }
@@ -509,7 +511,7 @@ pub mod pallet {
                 (
                     who,
                     <frame_system::Pallet<T>>::block_number(),
-                    T::Time::now(),
+                    T::Timestamp::now(),
                 ),
             );
             Ok(())
@@ -539,12 +541,12 @@ pub mod pallet {
         fn attribute_and_id(
             identity: &T::AccountId,
             name: &[u8],
-        ) -> Option<AttributedId<T::BlockNumber, <<T as Config>::Time as Time>::Moment>> {
+        ) -> Option<AttributedId<T::BlockNumber, T::Moment>> {
             let nonce = Self::nonce_of((&identity, name.to_vec()));
     
             // Used for first time attribute creation
             let lookup_nonce = match nonce {
-                Some(0u64) => 0u64,
+                0u64 => 0u64,
                 _ => nonce - 1u64,
             };
     
@@ -552,8 +554,9 @@ pub mod pallet {
             // Needs to use actual attribute nonce -1.
             let id = (&identity, name, lookup_nonce).using_encoded(blake2_256);
     
-            if <AttributeOf<T>>::contains_key((&identity, &id)) {
-                Some((Self::attribute_of((identity, id)), id))
+            let attribute = Self::attribute_of((identity, id));
+            if let Some(attribute) = attribute {
+                Some((attribute, id))
             } else {
                 None
             }

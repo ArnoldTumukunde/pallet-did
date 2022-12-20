@@ -2,7 +2,7 @@
 name = "pallet-did"
 version = '4.0.0-dev'
 description = 'Substrate Decentralized ID Pallet'
-edition = '2018'
+edition = '2021'
 authors = ['Substrate DevHub <https://github.com/substrate-developer-hub>']
 homepage = 'https://substrate.dev'
 repository = 'https://github.com/paritytech/substrate/'
@@ -12,7 +12,7 @@ license = 'Unlicense'
 codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = ["derive"] }
 scale-info = { version = "2.1.1", default-features = false, features = ["derive"] }
 serde = { features = ['derive'], optional = true, version = '1.0.119' }
-
+frame-benchmarking = { version = "4.0.0-dev", default-features = false, optional = true, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.35" }
 frame-support = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", " branch" = "polkadot-v0.9.35" }
 frame-system = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", " branch" = "polkadot-v0.9.35" }
 pallet-timestamp = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.35" }
@@ -33,3 +33,5 @@ std = [
 	'frame-system/std',
 	'pallet-timestamp/std',
 ]
+runtime-benchmarks = ["frame-benchmarking/runtime-benchmarks"]
+try-runtime = ["frame-support/try-runtime"]
