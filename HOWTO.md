@@ -23,6 +23,7 @@ std = [
     # --snip--
 ]
 ```
+
 Next we will update `my-node/runtime/src/lib.rs` to actually use our new runtime pallet, by adding a trait implementation with our pallet_did and add it in our construct_runtime! macro.
 
 ``` rust
@@ -43,7 +44,7 @@ construct_runtime!(
   {
     // --snip--
     // add the following line
-    PalletDID: pallet_did::{Pallet, Call, Storage, Event<T>},
+    PalletDID: pallet_did,
   }
 );
 ```

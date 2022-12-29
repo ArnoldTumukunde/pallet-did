@@ -90,21 +90,19 @@ mod tests;
 pub use pallet::*;
 #[frame_support::pallet]
 pub mod pallet {
-	use frame_support::pallet_prelude::*;
-	use frame_system::pallet_prelude::*;
-	use sp_std::prelude::*;
-    use frame_system::ensure_signed;
     use frame_support::{
+        pallet_prelude::*,
         dispatch::DispatchResult, ensure,traits::{Time, IsType},
         sp_runtime::traits::{Scale, IdentifyAccount, Member, Verify},
     };
+	use frame_system::{pallet_prelude::*, ensure_signed};
+	use sp_std::{prelude::*, convert::TryInto, vec::Vec};
     use codec::{Decode, Encode};
     use sp_io::hashing::blake2_256;
-    use sp_std::vec::Vec;
+    use scale_info::StaticTypeInfo;
 	use crate::types::*;
     use crate::did::Did;
-    use sp_std::convert::TryInto;
-    use scale_info::StaticTypeInfo;
+
 
 	#[pallet::pallet]
 	#[pallet::without_storage_info]

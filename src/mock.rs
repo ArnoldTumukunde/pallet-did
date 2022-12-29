@@ -23,7 +23,7 @@ frame_support::construct_runtime!(
         UncheckedExtrinsic = UncheckedExtrinsic,
     {
         System: frame_system,
-        DID: pallet_did::pallet::{Pallet, Call, Storage, Event<T>},
+        DID: pallet_did,
         Timestamp: pallet_timestamp,
     }
 );
