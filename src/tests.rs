@@ -4,9 +4,8 @@ use codec::Encode;
 use frame_support::{assert_noop, assert_ok};
 use frame_system::RawOrigin;
 use sp_core::Pair;
-use sp_std::alloc::System;
 use crate::types::AttributeTransaction;
-use crate::pallet::Error::*;
+use crate::pallet::Error;
 
 #[test]
 fn validate_claim() {
@@ -22,7 +21,7 @@ fn validate_claim() {
         let satoshi_sig = satoshi_pair.sign(&claim);
 
         // Validate that "Satoshi" signed the message.
-        assert_ok!(Did::valid_signer(
+        assert_ok!(DID::valid_signer(
             &satoshi_public,
             &satoshi_sig,
             &claim,
@@ -34,8 +33,8 @@ fn validate_claim() {
 
         // Fail to validate that Bob signed the message.
         assert_noop!(
-            Did::check_signature(&satoshi_sig, &claim, &bobtc_public),
-            BadSignature
+            DID::check_signature(&satoshi_sig, &claim, &bobtc_public),
+            Error::<Test>::BadSignature
         );
     });
 }
@@ -55,8 +54,8 @@ fn validate_delegated_claim() {
 
         // Add signer delegate
         assert_ok!(
-            Did::add_delegate(
-                RawOrigin::signed(satoshi_public.clone()),
+            DID::add_delegate(
+                RawOrigin::Signed(satoshi_public.clone()).into(),
                 satoshi_public,  // owner
                 nakamoto_public, // new signer delgate
                 delegate_type,   // "Sr25519VerificationKey2018"
@@ -70,7 +69,7 @@ fn validate_delegated_claim() {
         System::set_block_number(3);
 
         // Validate that satoshi's delegate signed the message.
-        assert_ok!(Did::valid_signer(
+        assert_ok!(DID::valid_signer(
             &satoshi_public,
             &satoshi_sig,
             &claim,
@@ -81,8 +80,8 @@ fn validate_delegated_claim() {
 
         // Delegate became invalid at block 6
         assert_noop!(
-            Did::valid_signer(&satoshi_public, &satoshi_sig, &claim, &nakamoto_public),
-            InvalidDelegate
+            DID::valid_signer(&satoshi_public, &satoshi_sig, &claim, &nakamoto_public),
+            Error::<Test>::InvalidDelegate
         );
     });
 }
@@ -99,8 +98,8 @@ fn add_on_chain_and_revoke_off_chain_attribute() {
         let alice_public = alice_pair.public();
 
         // Add a new attribute to an identity. Valid until block 1 + 1000.
-        assert_ok!(Did::add_attribute(
-            RawOrigin::signed(alice_public),
+        assert_ok!(DID::add_attribute(
+            RawOrigin::Signed(alice_public).into(),
             alice_public,
             name.clone(),
             value.clone(),
@@ -108,7 +107,7 @@ fn add_on_chain_and_revoke_off_chain_attribute() {
         ));
 
         // Validate that the attribute contains_key and has not expired.
-        assert_ok!(Did::valid_attribute(&alice_public, &name, &value));
+        assert_ok!(DID::valid_attribute(&alice_public, &name, &value));
 
         // Revoke attribute off-chain
         // Set validity to 0 in order to revoke the attribute.
@@ -131,15 +130,15 @@ fn add_on_chain_and_revoke_off_chain_attribute() {
         };
 
         // Revoke with off-chain signed transaction.
-        assert_ok!(Did::execute(
-            RawOrigin::signed(alice_public),
+        assert_ok!(DID::execute(
+            RawOrigin::Signed(alice_public).into(),
             revoke_transaction
         ));
 
         // Validate that the attribute was revoked.
         assert_noop!(
-            Did::valid_attribute(&alice_public, &name, &[1, 2, 3].to_vec()),
-            InvalidAttribute
+            DID::valid_attribute(&alice_public, &name, &[1, 2, 3].to_vec()),
+            Error::<Test>::InvalidAttribute
         );
     });
 }
@@ -149,29 +148,29 @@ fn attacker_to_transfer_identity_should_fail() {
     new_test_ext().execute_with(|| {
         // Attacker is not the owner
         assert_eq!(
-            Did::identity_owner(&account_key("Alice")),
+            DID::identity_owner(&account_key("Alice")),
             account_key("Alice")
         );
 
         // Transfer identity ownership to attacker
         assert_noop!(
-            Did::change_owner(
-                RawOrigin::signed(account_key("BadBoy")),
+            DID::change_owner(
+                RawOrigin::Signed(account_key("BadBoy")).into(),
                 account_key("Alice"),
                 account_key("BadBoy")
             ),
-            NotOwner
+            Error::<Test>::NotOwner
         );
 
         // Attacker is not the owner
         assert_noop!(
-            Did::is_owner(&account_key("Alice"), &account_key("BadBoy")),
-            NotOwner
+            DID::is_owner(&account_key("Alice"), &account_key("BadBoy")),
+            Error::<Test>::NotOwner
         );
 
         // Verify that the owner never changed
         assert_eq!(
-            Did::identity_owner(&account_key("Alice")),
+            DID::identity_owner(&account_key("Alice")),
             account_key("Alice")
         );
     });
@@ -182,26 +181,26 @@ fn attacker_add_new_delegate_should_fail() {
     new_test_ext().execute_with(|| {
         // BadBoy is an invalid delegate previous to attack.
         assert_noop!(
-            Did::valid_delegate(&account_key("Alice"), &[7, 7, 7], &account_key("BadBoy")),
-            InvalidDelegate
+            DID::valid_delegate(&account_key("Alice"), &[7, 7, 7], &account_key("BadBoy")),
+            Error::<Test>::InvalidDelegate
         );
 
         // Attacker should fail to add delegate.
         assert_noop!(
-            Did::add_delegate(
-                RawOrigin::signed(account_key("BadBoy")),
+            DID::add_delegate(
+                RawOrigin::Signed(account_key("BadBoy")).into(),
                 account_key("Alice"),
                 account_key("BadBoy"),
                 vec![7, 7, 7],
                 Some(20)
             ),
-            NotOwner
+            Error::<Test>::NotOwner
         );
 
         // BadBoy is an invalid delegate.
         assert_noop!(
-            Did::valid_delegate(&account_key("Alice"), &[7, 7, 7], &account_key("BadBoy")),
-            InvalidDelegate
+            DID::valid_delegate(&account_key("Alice"), &[7, 7, 7], &account_key("BadBoy")),
+            Error::<Test>::InvalidDelegate
         );
     });
 }
@@ -211,30 +210,30 @@ fn add_remove_add_remove_attr() {
     new_test_ext().execute_with(|| {
         let acct = "Alice";
         let vec = vec![7, 7, 7];
-        assert_eq!(Did::nonce_of((account_key(acct), vec.to_vec())), 0);
-        assert_ok!(Did::add_attribute(
-            RawOrigin::signed(account_key(acct)),
+        assert_eq!(DID::nonce_of((account_key(acct), vec.to_vec())), 0);
+        assert_ok!(DID::add_attribute(
+            RawOrigin::Signed(account_key(acct)).into(),
             account_key(acct),
             vec.to_vec(),
             vec.to_vec(),
             None
         ));
-        assert_eq!(Did::nonce_of((account_key(acct), vec.to_vec())), 1);
-        assert_ok!(Did::delete_attribute(
-            RawOrigin::signed(account_key(acct)),
+        assert_eq!(DID::nonce_of((account_key(acct), vec.to_vec())), 1);
+        assert_ok!(DID::delete_attribute(
+            RawOrigin::Signed(account_key(acct)).into(),
             account_key(acct),
             vec.to_vec()
         ));
-        assert_ok!(Did::add_attribute(
-            RawOrigin::signed(account_key(acct)),
+        assert_ok!(DID::add_attribute(
+            RawOrigin::Signed(account_key(acct)).into(),
             account_key(acct),
             vec.to_vec(),
             vec.to_vec(),
             None
         ));
-        assert_eq!(Did::nonce_of((account_key(acct), vec.to_vec())), 2);
-        assert_ok!(Did::delete_attribute(
-            RawOrigin::signed(account_key(acct)),
+        assert_eq!(DID::nonce_of((account_key(acct), vec.to_vec())), 2);
+        assert_ok!(DID::delete_attribute(
+            RawOrigin::Signed(account_key(acct)).into(),
             account_key(acct),
             vec.to_vec()
         ));

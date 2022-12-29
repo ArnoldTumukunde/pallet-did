@@ -1,8 +1,8 @@
 use crate as pallet_did;
 use frame_support::traits::{ConstU16, ConstU64,OnTimestampSet};
 use frame_system as system;
-use sp_runtime::BuildStorage;
 use sp_core::{sr25519, Pair, H256};
+use sp_core::sr25519::Signature;
 use sp_runtime::{
     testing::Header,
     traits::{BlakeTwo256, Extrinsic as ExtrinsicT, IdentifyAccount, IdentityLookup, Verify},
@@ -23,7 +23,7 @@ frame_support::construct_runtime!(
         UncheckedExtrinsic = UncheckedExtrinsic,
     {
         System: frame_system,
-        DID: pallet_did::{Pallet, Call, Storage, Event<T>},
+        DID: pallet_did::pallet::{Pallet, Call, Storage, Event<T>},
         Timestamp: pallet_timestamp,
     }
 );
@@ -51,7 +51,11 @@ impl system::Config for Test {
     type OnKilledAccount = ();
     type SystemWeightInfo = ();
     type SS58Prefix = ConstU16<42>;
+    type OnSetCode = ();
+	type MaxConsumers = frame_support::traits::ConstU32<16>;
 }
+
+
 
 impl frame_system::offchain::SigningTypes for Test {
     type Public = <sr25519::Signature as Verify>::Signer;
@@ -103,9 +107,10 @@ impl pallet_timestamp::Config for Test {
 
 impl pallet_did::Config for Test {
     type RuntimeEvent = RuntimeEvent;
-    type Public = sr25519::Public;
+    type Public = <<Signature as Verify>::Signer as IdentifyAccount>::AccountId;
     type Signature = sr25519::Signature;
-    type Time = Timestamp;
+    type Moment = Moment;
+    type Timestamp = Timestamp;
 }
 
 // Build genesis storage according to the mock runtime.

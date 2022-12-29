@@ -86,6 +86,8 @@ mod mock;
 
 #[cfg(test)]
 mod tests;
+
+pub use pallet::*;
 #[frame_support::pallet]
 pub mod pallet {
 	use frame_support::pallet_prelude::*;
@@ -109,8 +111,8 @@ pub mod pallet {
 	#[pallet::generate_store(pub(super) trait Store)]
 	pub struct Pallet<T>(_);
 
-    #[pallet::config]
-    pub trait Config: frame_system::Config {
+	#[pallet::config]
+	pub trait Config: frame_system::Config {
         type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
         type Public: IdentifyAccount<AccountId = Self::AccountId>;
         type Signature: Verify<Signer = Self::Public> + Member + Decode + Encode + TypeInfo;
@@ -136,7 +138,7 @@ pub mod pallet {
     
     #[pallet::storage]
     #[pallet::getter(fn nonce_of)]
-    pub type AttributeNonce<T: Config> =
+    pub(super) type AttributeNonce<T: Config> =
     StorageMap<_, Twox64Concat, (T::AccountId, Vec<u8>), u64, ValueQuery>;
     
     #[pallet::storage]
