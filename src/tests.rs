@@ -1,11 +1,9 @@
 use crate::did::Did;
-use crate::mock::*;
+use crate::{mock::*, types::AttributeTransaction, Error};
 use codec::Encode;
 use frame_support::{assert_noop, assert_ok};
 use frame_system::RawOrigin;
 use sp_core::Pair;
-use crate::types::AttributeTransaction;
-use crate::pallet::Error;
 
 #[test]
 fn validate_claim() {
