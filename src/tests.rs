@@ -42,8 +42,8 @@ fn validate_delegated_claim() {
     new_test_ext().execute_with(|| {
         System::set_block_number(1);
 
-        // Predefined delegate type: "Sr25519VerificationKey2018"
-        let delegate_type = b"x25519VerificationKey2018".to_vec();
+        // Predefined delegate type: "Sr25519VerificationKey2022"
+        let delegate_type = b"x25519VerificationKey2022".to_vec();
         let data = b"I am Satoshi Nakamoto".to_vec();
 
         let satoshi_public = account_key("Satoshi"); // Get Satoshi's public key.
@@ -56,7 +56,7 @@ fn validate_delegated_claim() {
                 RawOrigin::Signed(satoshi_public.clone()).into(),
                 satoshi_public,  // owner
                 nakamoto_public, // new signer delgate
-                delegate_type,   // "Sr25519VerificationKey2018"
+                delegate_type,   // "Sr25519VerificationKey2022"
                 Some(5)
             ) // valid for 5 blocks
         );

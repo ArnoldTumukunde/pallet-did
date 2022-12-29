@@ -451,7 +451,7 @@ pub mod pallet {
             signer: &T::AccountId,
         ) -> DispatchResult {
             // Owner or a delegate signer.
-            Self::valid_delegate(&identity, b"x25519VerificationKey2021", &signer)?;
+            Self::valid_delegate(&identity, b"x25519VerificationKey2022", &signer)?;
             Self::check_signature(&signature, &msg, &signer)
         }
     
