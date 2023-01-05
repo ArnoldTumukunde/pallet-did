@@ -1,6 +1,6 @@
 [package]
 name = "pallet-did"
-version = '4.0.0-dev'
+version = '4.0.0'
 description = 'Substrate Decentralized ID Pallet'
 edition = '2021'
 authors = ['Substrate DevHub <https://github.com/substrate-developer-hub>']
@@ -11,15 +11,15 @@ license = 'Unlicense'
 [dependencies]
 codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = ["derive"] }
 scale-info = { version = "2.1.1", default-features = false, features = ["derive"] }
-serde = { features = ['derive'], optional = true, version = '1.0.119' }
-frame-benchmarking = "9.0.0"
-frame-support = "9.0.0"
-frame-system = "9.0.0"
-pallet-timestamp = "9.0.0"
-sp-core = "10.0.0"
-sp-io = "11.0.0"
-sp-runtime = "11.0.0"
-sp-std = "6.0.0"
+serde = { features = ["derive"], optional = true, version = "1.0.119" }
+frame-benchmarking = { version = "4.0.0-dev", default-features = false, optional = true, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.32" }
+frame-support = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.32" }
+frame-system = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.32" }
+pallet-timestamp = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.32" }
+sp-core = { version = "6.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.32" }
+sp-io = { version = "6.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.32" }
+sp-runtime = { version = "6.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.32" }
+sp-std = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.32" }
 
 [features]
 default = ['std']
