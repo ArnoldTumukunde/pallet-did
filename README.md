@@ -101,19 +101,19 @@ _A set of data that describes the subject of a DID, including mechanisms, such a
       {
          "id":"did:substrate:5HDx7jPsiED6n47eNfERrBBRHZb59jVW6UMZZMTSBpikzvhX#owner",
          "owner":"did:substrate:5HDx7jPsiED6n47eNfERrBBRHZb59jVW6UMZZMTSBpikzvhX",
-         "type":"Secp256k1VerificationKey2018",
+         "type":"Secp256k1VerificationKey2022",
          "publicKeyHex":"e43a60dbfc251a3a835b45b172bcb49243ed56f820ca89a1c746143c1ab9565d",
          "address":"5HDx7jPsiED6n47eNfERrBBRHZb59jVW6UMZZMTSBpikzvhX"
       },
       {
          "id":"did:substrate:5HDx7jPsiED6n47eNfERrBBRHZb59jVW6UMZZMTSBpikzvhX#signingKey#delegate-1",
-         "type":"Sr25519VerificationKey2018",
+         "type":"Sr25519VerificationKey2022",
          "publicKeyHex":"dea36bf1a0c198afd259633c2e70b502b19577cc5133760ac569ea6fb4d3b977",
          "address":"5H6d2vR8iqQRANBe7bNegFbEiEJgeCKid4VhS3Pg52VUEqeM"
       },
       {
          "id": "did:substrate:5HDx7jPsiED6n47eNfERrBBRHZb59jVW6UMZZMTSBpikzvhX#delegate-2",
-         "type": "RSAVerificationKey2018",
+         "type": "RSAVerificationKey2022",
          "owner": "did:substrate:5HDx7jPsiED6n47eNfERrBBRHZb59jVW6UMZZMTSBpikzvhX",
          "publicKeyPem": "-----BEGIN PUBLIC KEY...END PUBLIC KEY-----\r\n",
       }
@@ -127,7 +127,7 @@ _A set of data that describes the subject of a DID, including mechanisms, such a
    ],
    "authentication":[
       {
-         "type":"Secp256k1SignatureAuthentication2018",
+         "type":"Secp256k1SignatureAuthentication2022",
          "publicKey":"did:substrate:5HDx7jPsiED6n47eNfERrBBRHZb59jVW6UMZZMTSBpikzvhX#owner",
       }
    ],
@@ -144,14 +144,14 @@ _A set of data that describes the subject of a DID, including mechanisms, such a
    "publicKey":[
       {
          "id":"did:ethr:0xb9c5714089478a327f09197987f16f9e5d936e8a#owner",
-         "type":"Secp256k1VerificationKey2018",
+         "type":"Secp256k1VerificationKey2022",
          "owner":"did:ethr:0xb9c5714089478a327f09197987f16f9e5d936e8a",
          "ethereumAddress":"0xb9c5714089478a327f09197987f16f9e5d936e8a"
       }
    ],
    "authentication":[
       {
-         "type":"Secp256k1SignatureAuthentication2018",
+         "type":"Secp256k1SignatureAuthentication2022",
          "publicKey":"did:ethr:0xb9c5714089478a327f09197987f16f9e5d936e8a#owner"
       }
    ]
@@ -167,7 +167,7 @@ _A set of data that describes the subject of a DID, including mechanisms, such a
    "publicKeys":[
       {
          "id":"did:3:zdpuAt4qH8ur3vHpVrP1xb7rtJuyVUVbRiGatkkVcJZRgAXDf#signingKey",
-         "type":"Secp256k1VerificationKey2018",
+         "type":"Secp256k1VerificationKey2022",
          "publicKeyHex":"03fdd57adec3d438ea237fe46b33ee1e016eda6b585c3e27ea66686c2ea5358479"
       },
       {
@@ -177,13 +177,13 @@ _A set of data that describes the subject of a DID, including mechanisms, such a
       },
       {
          "id":"did:3:zdpuAt4qH8ur3vHpVrP1xb7rtJuyVUVbRiGatkkVcJZRgAXDf#managementKey",
-         "type":"Secp256k1VerificationKey2018",
+         "type":"Secp256k1VerificationKey2022",
          "ethereumAddress":"0xb9c5714089478a327f09197987f16f9e5d936e8a"
       }
    ],
    "authentication":[
       {
-         "type":"Secp256k1SignatureAuthentication2018",
+         "type":"Secp256k1SignatureAuthentication2022",
          "publicKey":"did:3:zdpuAt4qH8ur3vHpVrP1xb7rtJuyVUVbRiGatkkVcJZRgAXDf#signingKey"
       }
    ]

@@ -1,9 +1,10 @@
 use codec::{Decode, Encode};
+use scale_info::TypeInfo;
 use sp_core::RuntimeDebug;
 use sp_std::vec::Vec;
 
 /// Attributes or properties that make an identity.
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, RuntimeDebug)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, TypeInfo, Clone, Encode, Decode, Default, RuntimeDebug)]
 pub struct Attribute<BlockNumber, Moment> {
     pub name: Vec<u8>,
     pub value: Vec<u8>,
@@ -15,7 +16,7 @@ pub struct Attribute<BlockNumber, Moment> {
 pub type AttributedId<BlockNumber, Moment> = (Attribute<BlockNumber, Moment>, [u8; 32]);
 
 /// Off-chain signed transaction.
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, RuntimeDebug)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, TypeInfo, RuntimeDebug)]
 pub struct AttributeTransaction<Signature, AccountId> {
     pub signature: Signature,
     pub name: Vec<u8>,

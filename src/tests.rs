@@ -1,7 +1,8 @@
 use crate::did::Did;
-use crate::{mock::*, AttributeTransaction, Error};
+use crate::{mock::*, types::AttributeTransaction, Error};
 use codec::Encode;
 use frame_support::{assert_noop, assert_ok};
+use frame_system::RawOrigin;
 use sp_core::Pair;
 
 #[test]
@@ -41,8 +42,8 @@ fn validate_delegated_claim() {
     new_test_ext().execute_with(|| {
         System::set_block_number(1);
 
-        // Predefined delegate type: "Sr25519VerificationKey2018"
-        let delegate_type = b"x25519VerificationKey2018".to_vec();
+        // Predefined delegate type: "Sr25519VerificationKey2022"
+        let delegate_type = b"x25519VerificationKey2022".to_vec();
         let data = b"I am Satoshi Nakamoto".to_vec();
 
         let satoshi_public = account_key("Satoshi"); // Get Satoshi's public key.
@@ -52,10 +53,10 @@ fn validate_delegated_claim() {
         // Add signer delegate
         assert_ok!(
             DID::add_delegate(
-                Origin::signed(satoshi_public.clone()),
+                RawOrigin::Signed(satoshi_public.clone()).into(),
                 satoshi_public,  // owner
                 nakamoto_public, // new signer delgate
-                delegate_type,   // "Sr25519VerificationKey2018"
+                delegate_type,   // "Sr25519VerificationKey2022"
                 Some(5)
             ) // valid for 5 blocks
         );
@@ -96,7 +97,7 @@ fn add_on_chain_and_revoke_off_chain_attribute() {
 
         // Add a new attribute to an identity. Valid until block 1 + 1000.
         assert_ok!(DID::add_attribute(
-            Origin::signed(alice_public),
+            RawOrigin::Signed(alice_public).into(),
             alice_public,
             name.clone(),
             value.clone(),
@@ -128,7 +129,7 @@ fn add_on_chain_and_revoke_off_chain_attribute() {
 
         // Revoke with off-chain signed transaction.
         assert_ok!(DID::execute(
-            Origin::signed(alice_public),
+            RawOrigin::Signed(alice_public).into(),
             revoke_transaction
         ));
 
@@ -152,7 +153,7 @@ fn attacker_to_transfer_identity_should_fail() {
         // Transfer identity ownership to attacker
         assert_noop!(
             DID::change_owner(
-                Origin::signed(account_key("BadBoy")),
+                RawOrigin::Signed(account_key("BadBoy")).into(),
                 account_key("Alice"),
                 account_key("BadBoy")
             ),
@@ -185,7 +186,7 @@ fn attacker_add_new_delegate_should_fail() {
         // Attacker should fail to add delegate.
         assert_noop!(
             DID::add_delegate(
-                Origin::signed(account_key("BadBoy")),
+                RawOrigin::Signed(account_key("BadBoy")).into(),
                 account_key("Alice"),
                 account_key("BadBoy"),
                 vec![7, 7, 7],
@@ -209,7 +210,7 @@ fn add_remove_add_remove_attr() {
         let vec = vec![7, 7, 7];
         assert_eq!(DID::nonce_of((account_key(acct), vec.to_vec())), 0);
         assert_ok!(DID::add_attribute(
-            Origin::signed(account_key(acct)),
+            RawOrigin::Signed(account_key(acct)).into(),
             account_key(acct),
             vec.to_vec(),
             vec.to_vec(),
@@ -217,12 +218,12 @@ fn add_remove_add_remove_attr() {
         ));
         assert_eq!(DID::nonce_of((account_key(acct), vec.to_vec())), 1);
         assert_ok!(DID::delete_attribute(
-            Origin::signed(account_key(acct)),
+            RawOrigin::Signed(account_key(acct)).into(),
             account_key(acct),
             vec.to_vec()
         ));
         assert_ok!(DID::add_attribute(
-            Origin::signed(account_key(acct)),
+            RawOrigin::Signed(account_key(acct)).into(),
             account_key(acct),
             vec.to_vec(),
             vec.to_vec(),
@@ -230,7 +231,7 @@ fn add_remove_add_remove_attr() {
         ));
         assert_eq!(DID::nonce_of((account_key(acct), vec.to_vec())), 2);
         assert_ok!(DID::delete_attribute(
-            Origin::signed(account_key(acct)),
+            RawOrigin::Signed(account_key(acct)).into(),
             account_key(acct),
             vec.to_vec()
         ));
